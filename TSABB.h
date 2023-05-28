@@ -4,85 +4,53 @@
 
 using namespace std;
 
-template <class Key, class Item>
-class binarySearchTree : public Node<Key, Item>{
+template <class Key>
+class binarySearchTree : public Node<Key>{
 public:
     binarySearchTree();
-    binarySearchTree(Key key, Item val, int N);
+    binarySearchTree(Key key, Item val);
     
     Key key;
     Item val;
-    int N;
-    binarySearchTree<Key, Item> *esq;
-    binarySearchTree<Key, Item> *dir;
+    binarySearchTree<Key> *esq;
+    binarySearchTree<Key> *dir;
 };
 
-template <class Key, class Item>
-binarySearchTree<Key, Item>::binarySearchTree() : Node<Key, Item>(), key(), val(), N(0), esq(nullptr), dir(nullptr) {}
+template <class Key>
+binarySearchTree<Key>::binarySearchTree() : Node<Key>(), key(), val(), esq(nullptr), dir(nullptr) {}
 
-template <class Key, class Item>
-binarySearchTree<Key, Item>::binarySearchTree(Key key, Item val, int N) : Node<Key, Item>(key, val, N), key(key), val(val), N(N), esq(nullptr), dir(nullptr) {}
+template <class Key>
+binarySearchTree<Key>::binarySearchTree(Key key, Item val) : Node<Key>(key, val, false), key(key), val(val), esq(nullptr), dir(nullptr) {}
 
-template <class Key, class Item>
-class TSABB: public TS<Key,Item>{
+template <class Key>
+class TSABB: public TS<Key>{
     private:
-        int key;
-        int val;   
-        int N;
-        binarySearchTree<Key, Item> *raiz;
+        Key key;
+        Item val;   
+        //binarySearchTree<Key> *raiz;
 
     public:
+        binarySearchTree<Key> *raiz;  // tirei do privado para testar e conseguir acessar a raiz
         TSABB();
         ~TSABB();
-        void add(Key key, Item item);
+        void add(Key key, Item val);
         Item value(Key key);
-        //void remove(Key key);
+        bool isBST(binarySearchTree<Key>* raiz);
+        binarySearchTree<Key>* put(binarySearchTree<Key>* &raiz, Key key, Item &val);
+
 };
 
-template <class Key, class Item>
-TSABB<Key, Item>::TSABB() : N(0), key(), val(), raiz(nullptr) {}
+template <class Key>
+TSABB<Key>::TSABB() : key(), val(), raiz(nullptr) {}
 
-template <class Key, class Item>
-TSABB<Key, Item>::~TSABB() {
+template <class Key>
+TSABB<Key>::~TSABB() {
     // Implemente a lógica de destruição da árvore ou liberação de memória aqui
 }
 
-template <class Key, class Item>
-int size (binarySearchTree<Key, Item> *raiz){
-    if (raiz == nullptr){
-        return 0;
-    }
-    return raiz -> N;
-}
-/* template <class Key, class Item>
-TSABB<Key, Item>::~TSABB() {
-    delete raiz;
-} */
-
-
-
-template <class Key, class Item>
-binarySearchTree<Key, Item>* put(binarySearchTree<Key, Item>* &raiz, Key key, Item val) {
-    if (raiz == nullptr) {
-        raiz = new binarySearchTree<Key, Item>(key, val, 1); // atribui o novo nó à raiz
-    } 
-    else if (key > raiz->key) {
-        raiz->dir = put(raiz->dir, key, val);
-    }
-    else if (key < raiz->key) {
-        raiz->esq = put(raiz->esq, key, val);
-    } 
-    else {
-        raiz->val = val;
-    }
-    raiz->N = 1 + size(raiz->esq) + size(raiz->dir);
-    return raiz;
-}
-
-
-template <class Key, class Item>
-bool isBST(binarySearchTree<Key, Item>* raiz) {
-    static binarySearchTree<Key, Item>* prev = nullptr;
+template <class Key>
+bool TSABB<Key>::isBST(binarySearchTree<Key>* raiz) {
+    static binarySearchTree<Key>* prev = nullptr;
 
     // Verifica se a árvore está vazia
     if (raiz == nullptr) {
@@ -104,18 +72,49 @@ bool isBST(binarySearchTree<Key, Item>* raiz) {
     return isBST(raiz->dir);
 }
 
+template <class Key>
+binarySearchTree<Key>* TSABB<Key>::put(binarySearchTree<Key>* &raiz, Key key, Item &val) {
+    if (raiz == nullptr) {
+        raiz = new binarySearchTree<Key>(key, val/* , 1 */); // atribui o novo nó à raiz
+    } 
+    else if (key > raiz->key) {
+        raiz->dir = put(raiz->dir, key, val);
+    }
+    else if (key < raiz->key) {
+        raiz->esq = put(raiz->esq, key, val);
+    } 
+    else {
+        raiz->val.numOcorrencia++;
+        if (raiz->val.numOcorrencia > this->palavraMaisFreq) this->palavraMaisFreq = raiz->val.numOcorrencia;
+    }
 
-template <class Key, class Item>
-void TSABB<Key, Item>::add(Key key, Item val) {
+    if (raiz->val.numLetras > this->palavraMaisLonga) this->palavraMaisLonga = raiz->val.numLetras;
+    if (NRL(key) > this->palavraNRL) this->palavraNRL = NRL(key);
+    if (VSR(key) > this->palavraVSR) this->palavraVSR = VSR(key);
+
+    return raiz;
+}
+
+template <class Key>
+void TSABB<Key>::add(Key key, Item val) {
     put(raiz,key,val);
 }
 
 
-template <class Key, class Item>
-Item TSABB<Key, Item>::value(Key key) {
-    // Implemente a lógica para obter o valor correspondente à chave 'key' na árvore aqui
-    return Item();
+
+template <class Key>
+Item find(binarySearchTree<Key> * &raiz, Key key){
+    if (raiz == nullptr) return Item();
+    if (key > raiz -> key) return find(raiz -> dir, key);
+    else if (key < raiz -> key) return find(raiz -> esq, key);
+    else if (key == raiz -> key) return raiz -> val;
+    else return Item();
 }
 
+template <class Key>
+Item TSABB<Key>::value(Key key) {
+    // Implemente a lógica para obter o valor correspondente à chave 'key' na árvore aqui
+    return find(raiz, key);
+}
 
 #endif
