@@ -13,7 +13,6 @@ using namespace std;
 
 int main() {
     string estrutura;
-
     cin >> estrutura;
 
     TS<string>* ts;  // Ponteiro para a classe base TS<string>
