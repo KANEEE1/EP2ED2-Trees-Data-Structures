@@ -27,22 +27,16 @@ class ARN : public TS<Key> {
         Key key;
         Item val;
         char cor;
-        //NodeARN<Key>* raiz;
+        NodeARN<Key>* raiz = nullptr;
         NodeARN<Key>* put(NodeARN<Key>* &raiz, Key key, Item val);
         NodeARN<Key>* rodaEsq(NodeARN<Key>* raiz);
         NodeARN<Key>* rodaDir(NodeARN<Key>* raiz);
 
     public:
-        ARN();
-        NodeARN<Key>* raiz;
         void add(Key key, Item val);
         Item value(Key key);
-        //NodeARN<Key>* put(NodeARN<Key>* &raiz, Key key, Item val);
         
 };
-
-template <class Key>
-ARN<Key>::ARN() : key(), val(), cor(), raiz(nullptr) {}
 
 template <class Key>
 NodeARN<Key>* ARN<Key>::rodaEsq(NodeARN<Key>* r) {
@@ -84,13 +78,9 @@ NodeARN<Key> *ARN<Key>::put(NodeARN<Key> * &raiz, Key key, Item val){
         if(p->key == key){
             p->val.numOcorrencia++;
             if (p->val.numOcorrencia > this->palavraMaisFreq) this->palavraMaisFreq = p->val.numOcorrencia;
-            //if (key == "que") cout << "Palavra mais freq = " << this->palavraMaisFreq<<endl;
             return raiz;
         }
         else if ((key < p->key) && (p->esq != nullptr)) {
-/*             cout << "Key= " << key << endl;
-            cout << "Key raiz = " << p->key << endl;
-            cout << "Key da esq = " << p->esq->key << endl; */
             p = p->esq;
         }
         else if ((key < p->key) && (p->esq == nullptr)){
@@ -108,13 +98,13 @@ NodeARN<Key> *ARN<Key>::put(NodeARN<Key> * &raiz, Key key, Item val){
 
     if (filho->val.numLetras > this->palavraMaisLonga) this->palavraMaisLonga = filho->val.numLetras;
     if (NRL(key) > this->palavraNRL) this->palavraNRL = NRL(key);
-    if (VSR(key) > this->palavraVSR) this->palavraVSR = VSR(key);
+    if (val.vogaisSR > this->palavraVSR) this->palavraVSR = val.vogaisSR;
 
     if(key < p->key) p->esq = filho;
     else p->dir = filho;
 
-    NodeARN<Key> * q = new NodeARN<Key>();
-    NodeARN<Key> * r = new NodeARN<Key>();
+    NodeARN<Key> * aux1 = new NodeARN<Key>();
+    NodeARN<Key> * aux2 = new NodeARN<Key>();
 
     while(true){
         if(p->cor == 'b') break;
@@ -140,34 +130,30 @@ NodeARN<Key> *ARN<Key>::put(NodeARN<Key> * &raiz, Key key, Item val){
                 NodeARN<Key> * q = rodaDir(avo);
                 q->cor = 'b';
                 avo->cor = 'r';
-                //if(avo->pai != nullptr) avo->pai->esq = r;
                 if(raiz == avo) raiz = q;
                 break;
             }
             else if(p == avo->esq && filho == p->dir){
-                NodeARN<Key> * q = rodaEsq(p);
-                NodeARN<Key> * r = rodaDir(avo);
-                r->cor = 'b';
+                aux1 = rodaEsq(p);
+                aux2 = rodaDir(avo);
+                aux2->cor = 'b';
                 avo->cor = 'r';
-                //if(avo->pai != nullptr) avo->pai->esq = r;
-                if(raiz == avo) raiz = r;
+                if(raiz == avo) raiz = aux2;
                 break;
             }
             else if(p == avo->dir && filho == p->dir){
-                NodeARN<Key> * q = rodaEsq(avo);
-                q->cor = 'b';
+                aux1 = rodaEsq(avo);
+                aux1->cor = 'b';
                 avo->cor = 'r';
-                //if(avo->pai != nullptr) avo->pai->dir = r;
-                if(raiz == avo) raiz = q;
+                if(raiz == avo) raiz = aux1;
                 break;
             }
             else{
-                NodeARN<Key> * q = rodaDir(p);
-                NodeARN<Key> * r = rodaEsq(avo);
-                r->cor = 'b';
+                aux1 = rodaDir(p);
+                aux2 = rodaEsq(avo);
+                aux2->cor = 'b';
                 avo->cor = 'r';
-                //if(avo->pai != nullptr) avo->pai->dir = r;
-                if(raiz == avo) raiz = r;
+                if(raiz == avo) raiz = aux2;
                 break;
             }
         }
@@ -178,19 +164,18 @@ NodeARN<Key> *ARN<Key>::put(NodeARN<Key> * &raiz, Key key, Item val){
 
 template <class Key>
 void ARN<Key>::add(Key key, Item val) {
-    //cout << "Key= " << key << endl;
     put(raiz, key, val);
 }
 
 template <class Key>
 Item find(NodeARN<Key>* raiz, Key key) {
-    if (raiz == nullptr)
+    if (raiz == nullptr){
+        cout << "Essa chave não está na árvore" << endl;
         return Item();
-    if (raiz->key == key)
-        return raiz->val;
-    if (raiz->key > key)
-        return find(raiz->esq, key);
-    return find(raiz->dir, key);
+    }
+    if (raiz->key == key)return raiz->val;
+    if (raiz->key > key) return find(raiz->esq, key);
+    else return find(raiz->dir, key);
 }
 
 template <class Key>

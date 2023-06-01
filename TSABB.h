@@ -26,56 +26,21 @@ template <class Key>
 class TSABB: public TS<Key>{
     private:
         Key key;
-        Item val;   
-        //binarySearchTree<Key> *raiz;
+        Item val; 
+        binarySearchTree<Key> *raiz = nullptr; 
 
     public:
-        binarySearchTree<Key> *raiz;  // tirei do privado para testar e conseguir acessar a raiz
-        TSABB();
-        ~TSABB();
         void add(Key key, Item val);
         Item value(Key key);
-        bool isBST(binarySearchTree<Key>* raiz);
         binarySearchTree<Key>* put(binarySearchTree<Key>* &raiz, Key key, Item &val);
 
 };
 
-template <class Key>
-TSABB<Key>::TSABB() : key(), val(), raiz(nullptr) {}
-
-template <class Key>
-TSABB<Key>::~TSABB() {
-    // Implemente a lógica de destruição da árvore ou liberação de memória aqui
-}
-
-template <class Key>
-bool TSABB<Key>::isBST(binarySearchTree<Key>* raiz) {
-    static binarySearchTree<Key>* prev = nullptr;
-
-    // Verifica se a árvore está vazia
-    if (raiz == nullptr) {
-        return true;
-    }
-
-    // Verifica a subárvore esquerda
-    if (!isBST(raiz->esq)) {
-        return false;
-    }
-
-    // Verifica se o elemento atual é maior que o anterior
-    if (prev != nullptr && raiz->key <= prev->key) {
-        return false;
-    }
-    prev = raiz;
-
-    // Verifica a subárvore direita
-    return isBST(raiz->dir);
-}
 
 template <class Key>
 binarySearchTree<Key>* TSABB<Key>::put(binarySearchTree<Key>* &raiz, Key key, Item &val) {
     if (raiz == nullptr) {
-        raiz = new binarySearchTree<Key>(key, val/* , 1 */); // atribui o novo nó à raiz
+        raiz = new binarySearchTree<Key>(key, val); // atribui o novo nó à raiz
     } 
     else if (key > raiz->key) {
         raiz->dir = put(raiz->dir, key, val);
@@ -90,7 +55,7 @@ binarySearchTree<Key>* TSABB<Key>::put(binarySearchTree<Key>* &raiz, Key key, It
 
     if (raiz->val.numLetras > this->palavraMaisLonga) this->palavraMaisLonga = raiz->val.numLetras;
     if (NRL(key) > this->palavraNRL) this->palavraNRL = NRL(key);
-    if (VSR(key) > this->palavraVSR) this->palavraVSR = VSR(key);
+    if (val.vogaisSR > this->palavraVSR) this->palavraVSR = val.vogaisSR;
 
     return raiz;
 }
@@ -100,11 +65,12 @@ void TSABB<Key>::add(Key key, Item val) {
     put(raiz,key,val);
 }
 
-
-
 template <class Key>
 Item find(binarySearchTree<Key> * &raiz, Key key){
-    if (raiz == nullptr) return Item();
+    if (raiz == nullptr){ 
+        cout << "Essa chave não está na árvore" << endl;
+        return Item();
+    }
     if (key > raiz -> key) return find(raiz -> dir, key);
     else if (key < raiz -> key) return find(raiz -> esq, key);
     else if (key == raiz -> key) return raiz -> val;
@@ -113,7 +79,6 @@ Item find(binarySearchTree<Key> * &raiz, Key key){
 
 template <class Key>
 Item TSABB<Key>::value(Key key) {
-    // Implemente a lógica para obter o valor correspondente à chave 'key' na árvore aqui
     return find(raiz, key);
 }
 
